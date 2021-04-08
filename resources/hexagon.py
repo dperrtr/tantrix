@@ -36,16 +36,78 @@ class Hexagon:
                        (self.center[0] - self.ri, self.center[1] - (self.rc / 2)),  # A4 (south-west)
                        (self.center[0] - self.ri, self.center[1] + (self.rc / 2))  # A5 (north-west)
                        )
+        self.midpoints = ((self._find_midpoint(*self.angles[0:2])),  # M1 (north-east)
+                          (self._find_midpoint(*self.angles[1:3])),  # M2 (east)
+                          (self._find_midpoint(*self.angles[2:4])),  # M3 (south-east)
+                          (self._find_midpoint(*self.angles[3:5])),  # M4 (south-west)
+                          (self._find_midpoint(*self.angles[4:6])),  # M5 (west)
+                          (self._find_midpoint(self.angles[-1], self.angles[0])),  # M6 (north-west)
+                          )
 
-        # TODO populate the midpoints
+    @staticmethod
+    def _find_midpoint(p1: tuple, p2: tuple) -> tuple:
+        return (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2
 
     def plot_hexagon(self):
-        plt.figure()
-        for a in self.angles:
-            plt.scatter(*a, c='k')
-        plt.show()
+        # plot the edges
+        for p1, p2 in zip(self.angles[:-1], self.angles[1:]):
+            plt.plot([p1[0], p2[0]], [p1[1], p2[1]], 'k')
+        # add the last edge to close the loop
+        p1 = self.angles[-1]
+        p2 = self.angles[0]
+        plt.plot([p1[0], p2[0]], [p1[1], p2[1]], 'k')
+
+        # scatter the midpoints
+        for midpoint in self.midpoints:
+            plt.scatter(*midpoint, c='k')
+
+
+class TantrixHex(Hexagon):
+    def __init__(self, edge_colors: str, back_color: str, back_number: int, **kwargs):
+        super().__init__(**kwargs)
+        self.edge_colors = edge_colors
+        self.back_color = back_color,
+        self.back_number = back_number
+
+    def plot_hexagon(self):
+        super().plot_hexagon()
+        # we need to find the midpoints with the same colors:
+        path_dict = {}
+        for idx, c in enumerate(self.edge_colors):
+            if c in path_dict.keys():
+                path_dict.get(c).append(idx)
+            else:
+                path_dict[c] = [idx, ]
+
+        for c, indices in path_dict.items():
+            p1 = self.midpoints[indices[0]]
+            p2 = self.midpoints[indices[1]]
+            plt.plot([p1[0], p2[0]], [p1[1], p2[1]], c=c, lw=5)
+        # for midpoint, ec in zip(self.midpoints, self.edge_colors):
+        #     plt.scatter(*midpoint, c=ec)
+
+    def rotate(self, cw_steps: int):
+
+        self.edge_colors = self.edge_colors[(6 - cw_steps):] + self.edge_colors[:(6 - cw_steps)]
 
 
 if __name__ == '__main__':
-    hexagon = Hexagon(ri=2, center=(0, 5))
-    hexagon.plot_hexagon()
+    from resources.data_loader import populate_tantrix_hexagons
+    from resources.common_constants import CommonConstants
+
+    rc, ri = CommonConstants.RC, CommonConstants.RI
+
+    df = populate_tantrix_hexagons()
+    pieces = []
+    centers = [(0, 0), (2 * ri, 0), (ri, (rc / 2) + rc)]
+    for (__, row), center in zip(df.iterrows(), centers):
+        pieces.append(TantrixHex(ri=ri, center=center,
+                                 edge_colors=row.edge_colors, back_color=row.back_color, back_number=row.back_number))
+    pieces[0].rotate(4)
+    pieces[1].rotate(5)
+    pieces[2].rotate(4)
+
+    plt.figure()
+    for th in pieces:
+        th.plot_hexagon()
+    plt.show()
