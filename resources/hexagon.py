@@ -71,7 +71,7 @@ class TantrixHex(Hexagon):
 
     def plot_hexagon(self):
         super().plot_hexagon()
-        # we need to find the midpoints with the same colors:
+        # we need to  find the midpoints with the same colors:
         path_dict = {}
         for idx, c in enumerate(self.edge_colors):
             if c in path_dict.keys():
