@@ -1,6 +1,8 @@
 from math import sqrt
 
+import pandas as pd
 import matplotlib.pyplot as plt
+
 
 class Hexagon:
     def __init__(self, rc: float = None, ri: float = None, center: tuple = (0, 0),
@@ -18,8 +20,8 @@ class Hexagon:
             raise ValueError("Invalid value for init argument 'center'.")
         self.center = center
         self.is_vertical = is_vertical  # a vertical hexagon is oriented in a way to have two vertical edges
-        self.angles = None
-        self.midpoints = None
+        self.angles = None  # 6-tuple tuple, giving the XY position of each angle (north first)
+        self.midpoints = None  # 6-tuple tuple, giving the XY position of each midpoing (north-east first)
 
         self._populate_angles_and_midpoints()
 
@@ -64,7 +66,17 @@ class Hexagon:
 
 class TantrixHex(Hexagon):
     def __init__(self, edge_colors: str, back_color: str, back_number: int, **kwargs):
+        # sanity check
+        assert 1 <= back_number <= 30
+        assert back_color in 'yrbg'
+        assert isinstance(edge_colors, str)
+        assert len(edge_colors) == 6
+        char_counts = pd.Series(iter(edge_colors)).value_counts()
+        assert len(char_counts) == 3
+        assert (char_counts == 2).all()
+
         super().__init__(**kwargs)
+
         self.edge_colors = edge_colors
         self.back_color = back_color,
         self.back_number = back_number
