@@ -68,7 +68,7 @@ class TantrixHex(Hexagon):
     def __init__(self, edge_colors: str, back_color: str, back_number: int, **kwargs):
         # sanity check
         assert 1 <= back_number <= 30
-        assert back_color in 'yrbg'
+        assert back_color in 'rby'
         assert isinstance(edge_colors, str)
         assert len(edge_colors) == 6
         char_counts = pd.Series(iter(edge_colors)).value_counts()
@@ -104,22 +104,30 @@ class TantrixHex(Hexagon):
 
 
 if __name__ == '__main__':
-    from resources.data_loader import populate_tantrix_hexagons
+    from resources.data_loader import import_tantrix_data, populate_tantrix_hexagons
     from resources.common_constants import CommonConstants
+    from solver.main_solver import solve
 
     rc, ri = CommonConstants.RC, CommonConstants.RI
 
-    df = populate_tantrix_hexagons()
-    pieces = []
-    centers = [(0, 0), (2 * ri, 0), (ri, (rc / 2) + rc)]
-    for (__, row), center in zip(df.iterrows(), centers):
-        pieces.append(TantrixHex(ri=ri, center=center,
-                                 edge_colors=row.edge_colors, back_color=row.back_color, back_number=row.back_number))
-    pieces[0].rotate(4)
-    pieces[1].rotate(5)
-    pieces[2].rotate(4)
+    pieces = populate_tantrix_hexagons()
 
-    plt.figure()
-    for th in pieces:
-        th.plot_hexagon()
-    plt.show()
+    solve(pieces[:4], 'r')
+    print()
+
+
+
+    # df = import_tantrix_data()
+    # pieces = []
+    # centers = [(0, 0), (2 * ri, 0), (ri, (rc / 2) + rc)]
+    # for (__, row), center in zip(df.iterrows(), centers):
+    #     pieces.append(TantrixHex(ri=ri, center=center,
+    #                              edge_colors=row.edge_colors, back_color=row.back_color, back_number=row.back_number))
+    # pieces[0].rotate(4)
+    # pieces[1].rotate(5)
+    # pieces[2].rotate(4)
+    #
+    # plt.figure()
+    # for th in pieces:
+    #     th.plot_hexagon()
+    # plt.show()
