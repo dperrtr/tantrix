@@ -33,6 +33,9 @@ class HexaCell:
             0   1           NW NE
           5       2       W       E
             4   3           SW SE
+
+        edge_colors can also represent a piece with a single line, in which case the missing lines must be replaced
+        with '-'.
         """
         if edge_colors is None:
             self.occupied = False
@@ -78,6 +81,9 @@ class HexaCell:
         """Populate the 'lines' attribute according to the placed tile."""
         color_list = np.array(list(edge_colors))
         for c in np.unique(color_list):
+            if c == '-':
+                # we ignore those lines
+                continue
             self.lines[c] = list(np.where(color_list == c)[0])
 
 
@@ -197,9 +203,12 @@ class HexaGrid:
             midpoints.append(((v1[0] + v2[0]) / 2, (v1[1] + v2[1]) / 2))
 
         for c, points in tile.lines.items():
+            if c == '-':
+                # we ignore those other lines
+                continue
             entry = midpoints[points[0]]
             exit_ = midpoints[points[1]]
-            plt.plot((entry[0], exit_[0]), (entry[1], exit_[1]), color=c, lw=3)
+            plt.plot((entry[0], exit_[0]), (entry[1], exit_[1]), color=c, lw=6)
 
 
 if __name__ == '__main__':

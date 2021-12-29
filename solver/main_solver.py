@@ -25,13 +25,27 @@ def solve(pieces: list, color: str):
 
     # the very first piece is fixed, and set as the starting point
     perms = list(distinct_permutations(simplified_pieces[1:]))
-    perms = [list(simplified_pieces[:1]) +  list(perm) for perm in perms]
+    perms = [list(simplified_pieces[:1]) + list(perm) for perm in perms]
     print(f"Found a total of {len(perms)} possible distinct permutations.")
 
     for perm in tqdm(perms):
         possibilities = list(product([-1, 1], repeat=len(perm) - 1))
         for possibility in possibilities:
             raise NotImplementedError
+
+
+if __name__ == '__main__':
+    from resources.data_loader import populate_tantrix_hexagons
+    from solver.hexagrid import HexaGrid
+
+    pieces = populate_tantrix_hexagons()
+
+    solving_puzzle = 4
+    assert 3 <= solving_puzzle <= 10
+    solve(pieces[:solving_puzzle], pieces[solving_puzzle - 1].back_color)
+
+
+
 
 
 

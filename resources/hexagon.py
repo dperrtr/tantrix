@@ -21,7 +21,7 @@ class TantrixHex:
         assert (char_counts == 2).all()
 
         self.edge_colors = edge_colors
-        self.back_color = back_color,
+        self.back_color = back_color
         self.back_number = back_number
 
     def rotate(self, cw_steps: int):
@@ -32,10 +32,7 @@ class TantrixHex:
 
 if __name__ == '__main__':
     from resources.data_loader import populate_tantrix_hexagons
-    from resources.common_constants import CommonConstants
     from solver.hexagrid import HexaGrid
-
-    rc, ri = CommonConstants.RC, CommonConstants.RI
 
     pieces = populate_tantrix_hexagons()
 
