@@ -7,7 +7,7 @@ from itertools import cycle
 DIRECTIONS = ['NW', 'NE', 'E', 'SE', 'SW', 'W']
 
 
-class Cycler:
+class CyclerA:
     """A helper class to find combination of rotations (direction) of a TantrixHex."""
     def __init__(self):
         self.wheel = cycle(DIRECTIONS)

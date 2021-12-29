@@ -3,7 +3,6 @@ from math import sqrt
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 class Hexagon:
     def __init__(self, rc: float = None, ri: float = None, center: tuple = (0, 0),
                  is_vertical: bool = True):
@@ -106,28 +105,22 @@ class TantrixHex(Hexagon):
 if __name__ == '__main__':
     from resources.data_loader import import_tantrix_data, populate_tantrix_hexagons
     from resources.common_constants import CommonConstants
-    from solver.main_solver import solve
+    from solver.hexagrid import HexaGrid
 
     rc, ri = CommonConstants.RC, CommonConstants.RI
 
     pieces = populate_tantrix_hexagons()
 
-    solve(pieces[:4], 'r')
-    print()
 
+    grid = HexaGrid(5)
 
+    pieces[0].rotate(4)
+    pieces[1].rotate(5)
+    pieces[2].rotate(4)
 
-    # df = import_tantrix_data()
-    # pieces = []
-    # centers = [(0, 0), (2 * ri, 0), (ri, (rc / 2) + rc)]
-    # for (__, row), center in zip(df.iterrows(), centers):
-    #     pieces.append(TantrixHex(ri=ri, center=center,
-    #                              edge_colors=row.edge_colors, back_color=row.back_color, back_number=row.back_number))
-    # pieces[0].rotate(4)
-    # pieces[1].rotate(5)
-    # pieces[2].rotate(4)
-    #
-    # plt.figure()
-    # for th in pieces:
-    #     th.plot_hexagon()
-    # plt.show()
+    grid.place_piece(2, 2, pieces[0])
+    grid.place_piece(1, 3, pieces[1])
+    grid.place_piece(1, 2, pieces[2])
+
+    grid.plot_grid()
+
