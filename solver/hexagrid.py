@@ -14,11 +14,17 @@ from resources.hexagon import TantrixHex
 from resources.common_constants import CommonConstants
 
 
+sns.set_theme('talk')
+
+
 class OccupiedCell(Exception):
+    """Exception to be raised if we attempt to place a tile on a cell of the grid already occupied."""
     pass
 
 
 class HexaCell:
+    """Represents one cell of the grid. It can be occupied by a tile. If that's the case, its 'edge_colors' and
+    'lines' attributes are updated accordingly"""
     int2card = ['NW', 'NE', 'E', 'SE', 'SW', 'W']  # 0 -> 5
     card2int = {'NW': 0, 'NE': 1, 'E': 2, 'SE': 3, 'SW': 4, 'W': 5}
 
@@ -59,8 +65,8 @@ class HexaCell:
         else:
             return "HexaCell()"
 
-
     def place_piece(self, piece: TantrixHex):
+        """Place a new tile on the cell."""
         if self.occupied:
             raise OccupiedCell
 
@@ -69,63 +75,15 @@ class HexaCell:
         self._populate_lines(self.edge_colors)
 
     def _populate_lines(self, edge_colors: str):
+        """Populate the 'lines' attribute according to the placed tile."""
         color_list = np.array(list(edge_colors))
         for c in np.unique(color_list):
             self.lines[c] = list(np.where(color_list == c)[0])
 
 
-def get_unit_vertices(rc, ri) -> list:
-    # TODO compute this only once if performance issues
-    return [(-ri, (rc / 2)),  # NW
-            (0, rc),  # N
-            (0 + ri, (rc / 2)),  # NE
-            (0 + ri, -(rc / 2)),  # SE
-            (0, -rc),  # S
-            (-ri, -(rc / 2)),  # SW
-            ]
-
-
-def plot_hex_pattern(mid_x: float, mid_y: float, rc: float = None, c: str = 'gray'):
-    if rc is None:
-        rc = CommonConstants.RC
-        ri = CommonConstants.RI
-    else:
-        ri = sqrt(3) / 2 * rc
-
-    vertices = get_unit_vertices(rc, ri)
-    vertices = [(mid_x + p[0], mid_y + p[1]) for p in vertices]
-    # duplicate the first vertex a the end of the list, to simplify plotting
-    vertices = vertices + [vertices[0], ]
-
-    for p1, p2 in zip(vertices[:-1], vertices[1:]):
-        plt.plot((p1[0], p2[0]), (p1[1], p2[1]), color=c)
-
-
-def plot_hex_lines(tile: HexaCell, mid_x: float, mid_y: float, rc: float = None):
-    if rc is None:
-        rc = CommonConstants.RC
-        ri = CommonConstants.RI
-    else:
-        ri = sqrt(3) / 2 * rc
-
-    vertices = get_unit_vertices(rc, ri)
-    vertices = [(mid_x + p[0], mid_y + p[1]) for p in vertices]
-    # duplicate the first vertex a the end of the list, to simplify plotting
-    vertices = vertices + [vertices[0], ]
-
-    # compute the position of the midpoint
-    midpoints = []
-    for v1, v2 in zip(vertices[:-1], vertices[1:]):
-        midpoints.append(((v1[0] + v2[0]) / 2, (v1[1] + v2[1]) / 2))
-
-    print()
-    for c, points in tile.lines.items():
-        entry = midpoints[points[0]]
-        exit = midpoints[points[1]]
-        plt.plot((entry[0], exit[0]), (entry[1], exit[1]), color=c, lw=3)
-
-
 class HexaGrid:
+    """Represents the playing area. Builds a X-by-Y grid of hexagonal cells, which can be filled with tiles. This keeps
+    track of the position of all placed tiles."""
     def __init__(self, grid_size: int = 50):
         self.x_size = grid_size
         self.y_size = grid_size
@@ -141,13 +99,16 @@ class HexaGrid:
             self.grid[x, y] = HexaCell()
 
     def get_cell(self, x: int, y: int) -> HexaCell:
+        """Returns a cell of the Grid."""
         return self.grid[x, y]
 
     def place_piece(self, x: int, y: int, piece: TantrixHex):
+        """Place a tile in one of the cells."""
         self.get_cell(x, y).place_piece(piece)
         self.occupied_cells.append((x, y))
 
     def plot_grid(self):
+        """Plots the state of the grid."""
         # limit the grid size to the minimum necessary:
         min_x, max_x = np.min([v[0] for v in self.occupied_cells]), np.max([v[0] for v in self.occupied_cells]) + 1
         min_y, max_y = np.min([v[1] for v in self.occupied_cells]), np.max([v[1] for v in self.occupied_cells]) + 1
@@ -157,15 +118,12 @@ class HexaGrid:
 
         plotted_grid = self.grid[min_x:max_x, min_y:max_y]
 
-        # for x, y in product(range(2), range(2)):
-        #     print(plotted_grid[x, y])
-
         # plot the base grid in grey
         plt.figure(figsize=(10, 10))
         for x, y in product(range(plotted_grid.shape[0]), range(plotted_grid.shape[1])):
             center_x = (2 * y + x) * CommonConstants.RI
             center_y = -1.5 * x * CommonConstants.RC
-            plot_hex_pattern(center_x, center_y)
+            self.plot_hex_pattern(center_x, center_y)
 
         # plot the placed tiles
         for x, y in self.occupied_cells:
@@ -174,12 +132,11 @@ class HexaGrid:
             center_x = (2 * new_y + new_x) * CommonConstants.RI
             center_y = -1.5 * new_x * CommonConstants.RC
             # plot the border in black
-            plot_hex_pattern(center_x, center_y, c='k')
+            self.plot_hex_pattern(center_x, center_y, c='k')
 
             # plot the color lines
             tile = plotted_grid[new_x, new_y]
-            plot_hex_lines(tile, center_x, center_y)
-
+            self.plot_hex_lines(tile, center_x, center_y)
 
         # make the figure square
         xlim = plt.xlim()
@@ -193,15 +150,63 @@ class HexaGrid:
 
         plt.show()
 
+    @staticmethod
+    def get_unit_vertices(rc, ri) -> list:
+        """Get the position of the vertices of a HexaCell, with respect to its center. """
+        # TODO compute this only once if performance issues
+        return [(-ri, (rc / 2)),  # NW
+                (0, rc),  # N
+                (0 + ri, (rc / 2)),  # NE
+                (0 + ri, -(rc / 2)),  # SE
+                (0, -rc),  # S
+                (-ri, -(rc / 2)),  # SW
+                ]
+
+    def plot_hex_pattern(self, mid_x: float, mid_y: float, rc: float = None, c: str = 'gray'):
+        """Plots the edges of a single HexaCell."""
+        if rc is None:
+            rc = CommonConstants.RC
+            ri = CommonConstants.RI
+        else:
+            ri = sqrt(3) / 2 * rc
+
+        vertices = self.get_unit_vertices(rc, ri)
+        vertices = [(mid_x + p[0], mid_y + p[1]) for p in vertices]
+        # duplicate the first vertex a the end of the list, to simplify plotting
+        vertices = vertices + [vertices[0], ]
+
+        for p1, p2 in zip(vertices[:-1], vertices[1:]):
+            plt.plot((p1[0], p2[0]), (p1[1], p2[1]), color=c)
+
+    def plot_hex_lines(self, tile: HexaCell, mid_x: float, mid_y: float, rc: float = None):
+        """Plots the colored lines of a HexaCell."""
+        if rc is None:
+            rc = CommonConstants.RC
+            ri = CommonConstants.RI
+        else:
+            ri = sqrt(3) / 2 * rc
+
+        vertices = self.get_unit_vertices(rc, ri)
+        vertices = [(mid_x + p[0], mid_y + p[1]) for p in vertices]
+        # duplicate the first vertex a the end of the list, to simplify plotting
+        vertices = vertices + [vertices[0], ]
+
+        # compute the position of the midpoint
+        midpoints = []
+        for v1, v2 in zip(vertices[:-1], vertices[1:]):
+            midpoints.append(((v1[0] + v2[0]) / 2, (v1[1] + v2[1]) / 2))
+
+        for c, points in tile.lines.items():
+            entry = midpoints[points[0]]
+            exit_ = midpoints[points[1]]
+            plt.plot((entry[0], exit_[0]), (entry[1], exit_[1]), color=c, lw=3)
+
 
 if __name__ == '__main__':
-    from resources.data_loader import import_tantrix_data, populate_tantrix_hexagons
+    from resources.data_loader import populate_tantrix_hexagons
     from solver.main_solver import solve
 
     pieces = populate_tantrix_hexagons()
 
-    pieces = None
-
     solve(pieces[:4], 'r')
     print()
-
