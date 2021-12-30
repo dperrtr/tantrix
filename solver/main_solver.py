@@ -111,6 +111,7 @@ def solve(pieces: list, color: str, interactive_plot: bool = False):
                 plt.draw()
                 plt.pause(1E-9)
 
+            # FIXME: non-connex solution isn't valid
             if not collapsed and last_tile_position == (grid.mid[0] - 1, grid.mid[1]) and last_tile_exit == 3:
                 success = True
                 print("Found a successful path!")
@@ -135,3 +136,8 @@ if __name__ == '__main__':
     assert 3 <= solving_puzzle <= 10
     interactive_plot_ = True
     solve(pieces[:solving_puzzle], pieces[solving_puzzle - 1].back_color, interactive_plot=interactive_plot_)
+
+    # remaining optimization steps:
+        # early stop path-finding if target is further than the number of pieces left
+        # early stop path-finding if uses final cell early
+        # early stop path-finding of corresponding paths if path collapsed
