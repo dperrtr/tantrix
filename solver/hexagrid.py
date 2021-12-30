@@ -119,28 +119,21 @@ class HexaGrid:
         min_x, max_x = np.min([v[0] for v in self.occupied_cells]), np.max([v[0] for v in self.occupied_cells]) + 1
         min_y, max_y = np.min([v[1] for v in self.occupied_cells]), np.max([v[1] for v in self.occupied_cells]) + 1
 
-        x_gap = min_x
-        y_gap = min_y
-
-        plotted_grid = self.grid[min_x:max_x, min_y:max_y]
-
         # plot the base grid in grey
-        for x, y in product(range(plotted_grid.shape[0]), range(plotted_grid.shape[1])):
-            center_x = (2 * y + x) * CommonConstants.RI
-            center_y = -1.5 * x * CommonConstants.RC
-            self.plot_hex_pattern(center_x, center_y)
+        # for x, y in product(range(min_x, max_x), range(min_y, max_y)):
+        #     center_x = (2 * y + x) * CommonConstants.RI
+        #     center_y = -1.5 * x * CommonConstants.RC
+        #     self.plot_hex_pattern(center_x, center_y)
 
         # plot the placed tiles
         for x, y in self.occupied_cells:
-            new_x = x - x_gap
-            new_y = y - y_gap
-            center_x = (2 * new_y + new_x) * CommonConstants.RI
-            center_y = -1.5 * new_x * CommonConstants.RC
+            center_x = (2 * y + x) * CommonConstants.RI
+            center_y = -1.5 * x * CommonConstants.RC
             # plot the border in black
             self.plot_hex_pattern(center_x, center_y, c='k')
 
             # plot the color lines
-            tile = plotted_grid[new_x, new_y]
+            tile = self.grid[x, y]
             self.plot_hex_lines(tile, center_x, center_y)
 
         # make the figure square
@@ -214,5 +207,5 @@ if __name__ == '__main__':
 
     pieces = populate_tantrix_hexagons()
 
-    solve(pieces[:5], 'r')
+    solve(pieces[:4], 'r')
     print()

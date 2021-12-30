@@ -5,6 +5,7 @@ DavidPerruchoud (created on 26/12/2021)
 from itertools import product
 from more_itertools import distinct_permutations
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
@@ -23,9 +24,13 @@ POSITION_OFFSET = {0: (-1, 0),
                    4: (1, -1),
                    5: (0, -1)}
 
+mpl.use('TkAgg')
+plt.ion()
 
-def solve(pieces: list, color: str):
+
+def solve(pieces: list, color: str, interactive_plot: bool = False):
     assert len(color) == 1 and color in 'rby'
+    n_pieces = len(pieces)
     simplified_pieces = []
     for p in pieces:
         dist = np.diff(np.where(np.array(list(p.edge_colors)) == color))[0][0]
@@ -44,6 +49,8 @@ def solve(pieces: list, color: str):
     print(f"Found a total of {len(perms)} possible distinct permutations.")
 
     plt.figure(figsize=(10, 10))
+    collapsed = False
+    success = False
 
     debug_count = 0
     for perm in tqdm(perms):
@@ -59,7 +66,6 @@ def solve(pieces: list, color: str):
                              piece=TantrixHex(edge_colors=TILES.get(perm[0]), back_color='y', back_number=1))
 
             # make variables to keep track of first and last tile positions, and exit
-            first_tile_position = grid.mid
             first_tile_entry = 0
             last_tile_position = grid.mid
             last_tile_exit = (first_tile_entry + perm[0]) % 6
@@ -92,17 +98,30 @@ def solve(pieces: list, color: str):
                     # path collapsed
                     break
 
-            plt.close()
-            grid.plot_grid()
-            plt.title(debug_count)
-            plt.show()
+            if interactive_plot:
+                plt.cla()
+                grid.plot_grid()
+                x_lim = ((grid.mid[0] - np.ceil(n_pieces / 5) * 1.5), (grid.mid[0] + n_pieces) * 1.5)
+                x_span = np.diff(x_lim)[0]
+                plt.xlim(x_lim)
+                plt.ylim((-grid.mid[1] - n_pieces, -grid.mid[1] - n_pieces + x_span))
+                plt.xticks([])
+                plt.yticks([])
+                plt.title(debug_count)
+                plt.draw()
+                plt.pause(1E-9)
 
             if not collapsed and last_tile_position == (grid.mid[0] - 1, grid.mid[1]) and last_tile_exit == 3:
                 success = True
                 print("Found a successful path!")
+                plt.cla()
                 grid.plot_grid()
+                plt.xticks([])
+                plt.yticks([])
                 break
         if success:
+            plt.ioff()
+            plt.show()
             break
 
 
@@ -112,6 +131,7 @@ if __name__ == '__main__':
 
     pieces = populate_tantrix_hexagons()
 
-    solving_puzzle = 4
+    solving_puzzle = 6
     assert 3 <= solving_puzzle <= 10
-    solve(pieces[:solving_puzzle], pieces[solving_puzzle - 1].back_color)
+    interactive_plot_ = True
+    solve(pieces[:solving_puzzle], pieces[solving_puzzle - 1].back_color, interactive_plot=interactive_plot_)
