@@ -15,10 +15,11 @@ class TantrixHex:
         assert 1 <= back_number <= 30
         assert back_color in 'rby'
         assert isinstance(edge_colors, str)
-        assert len(edge_colors) == 6
-        char_counts = pd.Series(iter(edge_colors)).value_counts()
-        assert len(char_counts) == 3
-        assert (char_counts == 2).all()
+        if '-' not in edge_colors:
+            assert len(edge_colors) == 6
+            char_counts = pd.Series(iter(edge_colors)).value_counts()
+            assert len(char_counts) == 3
+            assert (char_counts == 2).all()
 
         self.edge_colors = edge_colors
         self.back_color = back_color

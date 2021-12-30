@@ -125,7 +125,6 @@ class HexaGrid:
         plotted_grid = self.grid[min_x:max_x, min_y:max_y]
 
         # plot the base grid in grey
-        plt.figure(figsize=(10, 10))
         for x, y in product(range(plotted_grid.shape[0]), range(plotted_grid.shape[1])):
             center_x = (2 * y + x) * CommonConstants.RI
             center_y = -1.5 * x * CommonConstants.RC
@@ -153,8 +152,6 @@ class HexaGrid:
 
         plt.xlim((xlim[0], xlim[0] + max_dist))
         plt.ylim((ylim[0], ylim[0] + max_dist))
-
-        plt.show()
 
     @staticmethod
     def get_unit_vertices(rc, ri) -> list:
@@ -217,5 +214,5 @@ if __name__ == '__main__':
 
     pieces = populate_tantrix_hexagons()
 
-    solve(pieces[:4], 'r')
+    solve(pieces[:5], 'r')
     print()
