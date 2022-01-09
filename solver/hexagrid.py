@@ -200,6 +200,13 @@ class HexaGrid:
             exit_ = midpoints[points[1]]
             plt.plot((entry[0], exit_[0]), (entry[1], exit_[1]), color=c, lw=6)
 
+    def is_grid_valid(self) -> bool:
+        """Check that each adjacent tiles have the same color."""
+        raise NotImplementedError
+        # iterate over each placed tile
+        # find each adjacent placed tiles and iterate
+        # check that the two colors of both adjacent edges match
+
 
 if __name__ == '__main__':
     from resources.data_loader import populate_tantrix_hexagons

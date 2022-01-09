@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -24,11 +25,39 @@ class TantrixHex:
         self.edge_colors = edge_colors
         self.back_color = back_color
         self.back_number = back_number
+        self.original_edge_colors = edge_colors
+        self.line_types = dict()
+
+        self.populate_color_lines_types()
+
+    def populate_color_lines_types(self):
+        """Populate the line_types attribute, informing on the type of lines on the tile. The number gives the number of
+        sides between the entry and exit of a color line:
+            1 : direct, short curve on adjacent edges
+            2 : curve, longer curve with one edge in-between
+            3 : across, straight line"""
+        line_dict = dict()
+
+        for color in np.unique(list(self.edge_colors)):
+            dist = np.diff(np.where(np.array(list(self.edge_colors)) == color))[0][0]
+            if dist == 3:
+                line_dict[color] = 3  # across
+            elif dist in (2, 4):
+                line_dict[color] = 2  # curve
+            elif dist in (1, 5):
+                line_dict[color] = 1  # direct
+            else:
+                raise ValueError
+
+        self.line_types = line_dict
 
     def rotate(self, cw_steps: int):
         """Rotate the tile by x steps, clockwise"""
         cw_steps = cw_steps % 6
         self.edge_colors = self.edge_colors[(6 - cw_steps):] + self.edge_colors[:(6 - cw_steps)]
+
+    def reset_rotation(self):
+        self.edge_colors = self.original_edge_colors
 
 
 if __name__ == '__main__':
